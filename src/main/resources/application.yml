@@ -1,11 +1,11 @@
 server:
   port: 8080
   servlet:
-    context-path: /foo
+    context-path: /molecular
 
 spring:
   application:
-    name: catch_foo
+    name: molecular
   profiles:
     active: dev #切换环境
   datasource:
@@ -61,7 +61,7 @@ spring:
 
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml #注意：一定要对应mapper映射xml文件的所在路径
-  type-aliases-package: cn.cescforz.foo.bean.domain # 注意：对应实体类的路径
+  type-aliases-package: cn.cescforz.molecular.bean.domain # 注意：对应实体类的路径
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #控制台打印 sql 语句
     cache-enabled: false #全局地开启或关闭配置文件中的所有映射器已经配置的任何缓存，默认为 true
