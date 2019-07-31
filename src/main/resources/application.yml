@@ -1,0 +1,87 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /foo
+
+spring:
+  application:
+    name: catch_foo
+  profiles:
+    active: dev #切换环境
+  datasource:
+    druid:
+      db-type: com.alibaba.druid.pool.DruidDataSource
+      driver-class-name: com.mysql.cj.jdbc.Driver #com.mysql.cj.jdbc.Driver --> mysql-connector-java 6以上设置(com.mysql.jdbc.Driver 过时)
+      url: jdbc:mysql://127.0.0.1:3306/catch_foo
+      username: root
+      password: root
+      initial-size: 1
+      max-active: 100
+      min-idle: 1
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      max-open-prepared-statements: 20
+      remove-abandoned: true
+      remove-abandoned-timeout: 1800
+      log-abandoned: false
+      filters: stat
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /druid/*          # http://127.0.0.1:8089/foo/druid/login.html
+        reset-enable: true
+        login-username: admin
+        login-password: admin
+  devtools: #热部署工具
+    livereload:
+      enabled: true #是否支持livereload
+      port: 35729
+    restart:
+      enabled: true
+      additional-paths: src/main/java #添加那个目录的文件需要restart
+      additional-exclude: static/**,public/** #排除那个目录的文件不需要restart
+  main:
+    allow-bean-definition-overriding: true #当遇到同样名字的时候，是否允许覆盖注册
+  thymeleaf:
+    cache: false
+    check-template: true
+    check-template-location: true
+    enabled: true
+    enable-spring-el-compiler: false
+    encoding: utf-8
+    mode: HTML
+    prefix: classpath:/templates/
+    suffix: .html
+    servlet:
+      content-type: text/html
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml #注意：一定要对应mapper映射xml文件的所在路径
+  type-aliases-package: cn.cescforz.foo.bean.domain # 注意：对应实体类的路径
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #控制台打印 sql 语句
+    cache-enabled: false #全局地开启或关闭配置文件中的所有映射器已经配置的任何缓存，默认为 true
+
+#mybatis:
+  #mapper-locations: classpath:mapper/*.xml
+  #type-aliases-package: cn.cescforz.foo.bean.domain
+
+
+
+global-config:
+  swagger:
+    enable: true
+    title: catch.foo Api
+    description: 'Document Api(URL: http://ip:port/swagger-ui.html)'   # http://127.0.0.1:8089/foo/swagger-ui.html
+    version: v1.0
+
+interface:
+  request:
+    timeout: 3000 #接口调用超时时间
+
+system-config:
+    redis-aisle: msg
