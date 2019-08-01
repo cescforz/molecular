@@ -8,7 +8,7 @@ import java.util.UUID;
 /**
  * <p>Description: redis主键生成策略工具类</p>
  *
- * @author developer developer@midea.com.cn
+ * @author cesc
  * @version 1.00.00
  * @date Create in 2019/7/2 10:44
  */
