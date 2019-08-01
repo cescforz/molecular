@@ -44,4 +44,5 @@
     <logger name="org.springframework.jndi" level="OFF"/>
     <logger name="org.quartz.core.QuartzSchedulerThread" level="INFO"/>
     <logger name="io.netty.util" level="WARN"/>
+    <logger name="ConditionEvaluationReportLoggingListener" level="WARN"/>
 </included>

@@ -18,6 +18,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <mybatis-plus.version>3.1.2</mybatis-plus.version>
+        <qiniu.version>[7.2.0, 7.2.99]</qiniu.version>
     </properties>
 
     <dependencies>
@@ -26,6 +27,12 @@
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
             <version>${mybatis-plus.version}</version>
+        </dependency>
+        <!-- 七牛云 -->
+        <dependency>
+            <groupId>com.qiniu</groupId>
+            <artifactId>qiniu-java-sdk</artifactId>
+            <version>${qiniu.version}</version>
         </dependency>
         <dependency>
             <groupId>cn.cescforz</groupId>

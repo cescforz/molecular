@@ -1,4 +1,4 @@
-package cn.cescforz.molecular.api;
+package cn.cescforz.molecular.component.mail;
 
 import javax.mail.MessagingException;
 
