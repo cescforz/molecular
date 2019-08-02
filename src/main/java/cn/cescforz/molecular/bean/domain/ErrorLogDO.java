@@ -2,6 +2,7 @@ package cn.cescforz.molecular.bean.domain;
 
 import cn.cescforz.molecular.bean.model.BaseEntity;
 import cn.cescforz.molecular.constant.MongoConstants;
+import com.alibaba.fastjson.JSON;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -28,4 +29,8 @@ public class ErrorLogDO extends BaseEntity {
     private String logInfo;
     private Integer moduleType;
 
+    @Override
+    public String toString() {
+        return JSON.toJSONString(this,true);
+    }
 }

@@ -98,10 +98,9 @@ public class WebExceptionAspect {
 
     /**
      * <p>Description: 处理异常并包装返回参数</p>
-     *
      * @param pjp
      * @param e
-     * @return cn.cescforz.bar.bean.dto.ResponseDTO<java.lang.Object>
+     * @return cn.cescforz.commons.lang.bean.dto.ResponseDTO<java.lang.Object>
      */
     private ResponseDTO<Object> handlerException(ProceedingJoinPoint pjp, Throwable e) {
         String methodName = String.valueOf(pjp.getSignature());
