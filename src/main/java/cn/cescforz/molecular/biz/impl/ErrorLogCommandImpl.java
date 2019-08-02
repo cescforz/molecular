@@ -15,10 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ErrorLogCommandImpl extends BaseMongoCommand<ErrorLogDO> implements ErrorLogCommand {
 
-    private ErrorLogDao errorLogDao;
-
     public ErrorLogCommandImpl(ErrorLogDao errorLogDao) {
         super(errorLogDao);
-        this.errorLogDao = errorLogDao;
     }
 }

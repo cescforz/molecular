@@ -1,6 +1,7 @@
-package cn.cescforz.molecular.biz;
+package cn.cescforz.molecular.biz.handler;
 
-import cn.cescforz.commons.lang.constant.SystemConstants;
+import cn.cescforz.commons.lang.enums.ResponseEnum;
+import cn.cescforz.commons.lang.exception.CustomRtException;
 import cn.cescforz.commons.lang.toolkit.util.StringTools;
 import cn.cescforz.molecular.properties.SystemProperties;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +13,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -29,7 +30,7 @@ import java.util.stream.Stream;
 @Slf4j
 @Component
 @EnableScheduling //开启定时器功能
-public class RedisHanlder<K,V> {
+public class RedisHandler<K,V> {
 
 
     @Resource
@@ -38,7 +39,6 @@ public class RedisHanlder<K,V> {
     private SystemProperties systemProperties;
 
     private static final String UNLOCK_LUA;
-    private static final String UTF_8 = SystemConstants.CHARSET_STR_UTF_8;
 
 
     /**
@@ -51,14 +51,17 @@ public class RedisHanlder<K,V> {
     /**
      * 获取分布式锁，原子操作
      * @param lockKey :
-     * @param requestId :
+     * @param requestId : 唯一ID
      * @param expire :
      * @param timeUnit :
      * @return boolean
      */
     public boolean tryLock(String lockKey, String requestId, long expire, TimeUnit timeUnit) {
         try{
-            RedisCallback<Boolean> callback = connection -> connection.set(lockKey.getBytes(Charset.forName(UTF_8)), requestId.getBytes(Charset.forName(UTF_8)), Expiration.seconds(timeUnit.toSeconds(expire)), RedisStringCommands.SetOption.SET_IF_ABSENT);
+            RedisCallback<Boolean> callback = connection -> connection.set(lockKey.getBytes(StandardCharsets.UTF_8),
+                                                                           requestId.getBytes(StandardCharsets.UTF_8),
+                                                                           Expiration.seconds(timeUnit.toSeconds(expire)),
+                                                                           RedisStringCommands.SetOption.SET_IF_ABSENT);
             Boolean flag = redisTemplate.execute(callback);
             return Optional.ofNullable(flag).orElse(false);
         } catch (Exception e) {
@@ -74,7 +77,11 @@ public class RedisHanlder<K,V> {
      * @return boolean
      */
     public boolean releaseLock(String lockKey, String requestId) {
-        RedisCallback<Boolean> callback = connection -> connection.eval(UNLOCK_LUA.getBytes(), ReturnType.BOOLEAN ,1, lockKey.getBytes(Charset.forName(UTF_8)), requestId.getBytes(Charset.forName(UTF_8)));
+        RedisCallback<Boolean> callback = connection -> connection.eval(UNLOCK_LUA.getBytes(),
+                                                                        ReturnType.BOOLEAN ,
+                                                                       1,
+                                                                        lockKey.getBytes(StandardCharsets.UTF_8),
+                                                                        requestId.getBytes(StandardCharsets.UTF_8));
         Boolean flag = redisTemplate.execute(callback);
         return Optional.ofNullable(flag).orElse(false);
     }
@@ -87,7 +94,9 @@ public class RedisHanlder<K,V> {
     public String get(String lockKey) {
         try {
             return Optional.ofNullable(lockKey).map(u -> {
-                RedisCallback<String> callback = connection -> new String(connection.get(u.getBytes()), Charset.forName(UTF_8));
+                RedisCallback<String> callback = connection ->
+                        new String(Optional.ofNullable(connection.get(u.getBytes())).orElseThrow(() -> new CustomRtException(ResponseEnum.RECORD_NOT_EXIST)),
+                                   StandardCharsets.UTF_8);
                 return redisTemplate.execute(callback);
             }).orElse(null);
         } catch (Exception e) {
@@ -100,12 +109,12 @@ public class RedisHanlder<K,V> {
     /**
      * 默认过期时长，单位：秒
      */
-    public static final long DEFAULT_EXPIRE = 60 * 60;
+    public static final Long DEFAULT_EXPIRE = 60L * 60L;
 
     /**
      * 不设置过期时长
      */
-    public static final long NOT_EXPIRE = -1;
+    public static final Long NOT_EXPIRE = -1L;
 
 
 
@@ -130,7 +139,8 @@ public class RedisHanlder<K,V> {
      * @return 修改成功返回true
      */
     public boolean renameKeyNotExist(K oldKey, K newKey) {
-        return redisTemplate.renameIfAbsent(oldKey, newKey);
+        Boolean b = redisTemplate.renameIfAbsent(oldKey, newKey);
+        return Optional.ofNullable(b).orElse(false);
     }
 
     /**
@@ -185,7 +195,8 @@ public class RedisHanlder<K,V> {
      * @return
      */
     public long getKeyExpire(K key, TimeUnit timeUnit) {
-        return redisTemplate.getExpire(key, timeUnit);
+        Long expire = redisTemplate.getExpire(key, timeUnit);
+        return Optional.ofNullable(expire).orElse(0L);
     }
 
     /**

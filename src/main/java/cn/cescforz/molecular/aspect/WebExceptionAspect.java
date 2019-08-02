@@ -29,7 +29,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -78,11 +77,11 @@ public class WebExceptionAspect {
             String methodName = String.valueOf(pjp.getSignature());
             String param = StringUtils.join(pjp.getArgs());
             log.info("执行Controller开始:{};参数:{}", methodName, param);
-            //处理入参特殊字符和sql注入攻击
+            // 处理入参特殊字符和sql注入攻击
             checkRequestParam(pjp);
-            //执行访问接口操作-->获取返回参数
+            // 执行访问接口操作-->获取返回参数
             Object proceed = pjp.proceed();
-            responseDTO.setData(proceed);
+            responseDTO.setRespData(proceed);
             log.info("执行Controller结束:{},返回值:{}", methodName, JSON.toJSONString(responseDTO, true));
             Long consumeTime = stopwatch.stop().elapsed(TimeUnit.MILLISECONDS);
             log.info("耗时:{}(毫秒).", consumeTime);
@@ -109,14 +108,18 @@ public class WebExceptionAspect {
         String param = StringUtils.join(pjp.getArgs());
         ResponseDTO<Object> responseDTO;
         if (e.getClass().isAssignableFrom(CustomException.class)) {
-            CustomException stException = (CustomException) e;
-            log.error("捕获到ServerTransException异常:{}", JSONObject.toJSONString(stException.getResponseEnum()));
-            responseDTO = new ResponseDTO<>(false, stException.getErrorCode(), stException.getMessage());
+            CustomException ce = (CustomException) e;
+            log.error("捕获到--<CustomException>--异常:{}", JSONObject.toJSONString(ce.getResponseEnum()), ce);
+            responseDTO = new ResponseDTO<>(false, ce.getErrorCode(), ce.getMessage());
+        } else if (e.getClass().isAssignableFrom(CustomRtException.class)) {
+            CustomRtException cre = (CustomRtException) e;
+            log.error("捕获到--<CustomRtException>--异常:{}", JSONObject.toJSONString(cre.getResponseEnum()), cre);
+            responseDTO = new ResponseDTO<>(false, cre.getErrorCode(), cre.getMessage());
         } else if (e instanceof RuntimeException) {
-            log.error(String.format("RuntimeException{方法:%s,参数:%s,异常:%s}", methodName, param, e.getMessage()), e);
+            log.error(String.format("捕获到--<RuntimeException--> {方法:%s,参数:%s,异常:%s}", methodName, param, e.getMessage()), e);
             responseDTO = new ResponseDTO<>(false, null, e.getMessage());
         } else {
-            log.error(String.format("Exception{方法:%s,参数:%s,异常:%s}", methodName, param, e.getMessage()), e);
+            log.error(String.format("捕获到--<Exception--> {方法:%s,参数:%s,异常:%s}", methodName, param, e.getMessage()), e);
             responseDTO = new ResponseDTO<>(false, null, e.getMessage());
         }
         recordApiError(methodName, param, e, null);
@@ -144,7 +147,6 @@ public class WebExceptionAspect {
             errorLog.setConsumeTime(consumeTime);
         }
         errorLog.setModuleType(ModuleConstants.FOO_MODULE_TYPE);
-        errorLog.setCreateDate(new Date());
         producer.sendTxMsg(errorLog, RocketMQConstants.MARK_LOG, RocketMQConstants.HANDLE_EXCEPTIONS_TAG, null, null);
     }
 
@@ -175,7 +177,6 @@ public class WebExceptionAspect {
             apiLog.setClassMethod(StringTools.assembleStr(joinPoint.getSignature().getDeclaringTypeName(), ".", joinPoint.getSignature().getName()));
             apiLog.setArgs(StringUtils.join(joinPoint.getArgs()));
             apiLog.setConsumeTime(consumeTime);
-            apiLog.setCreateDate(new Date());
             logProducer.sendMsg(apiLog, RocketMQConstants.MARK_LOG, RocketMQConstants.HANDLE_RECORDLOG_TAG, null);
         }
     }

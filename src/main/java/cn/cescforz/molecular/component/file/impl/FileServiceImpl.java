@@ -2,10 +2,9 @@ package cn.cescforz.molecular.component.file.impl;
 
 import cn.cescforz.commons.lang.enums.ResponseEnum;
 import cn.cescforz.commons.lang.exception.CustomRtException;
-import cn.cescforz.commons.lang.toolkit.tool.KeyGenerator;
 import cn.cescforz.molecular.component.file.FileService;
 import cn.cescforz.molecular.properties.QiniuProperties;
-import cn.cescforz.molecular.toolkit.tool.UniKeyGenerator;
+import cn.cescforz.molecular.toolkit.util.KeyUtils;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.qiniu.common.QiniuException;
@@ -74,7 +73,7 @@ public class FileServiceImpl implements FileService {
         // 生成上传凭证，然后准备上传
         Auth auth = Auth.create(qiniuProperties.getAccessKey(), qiniuProperties.getSecretKey());
         String upToken = auth.uploadToken(qiniuProperties.getBucket());
-        Long id = UniKeyGenerator.getInstance().nextId();
+        Long id = KeyUtils.generateId();
         String fileName = String.format("%s%s",file.getName(), id.toString());
         try {
             Response response = uploadManager.put(file, fileName, upToken);
@@ -96,8 +95,7 @@ public class FileServiceImpl implements FileService {
         // 生成上传凭证，然后准备上传
         Auth auth = Auth.create(qiniuProperties.getAccessKey(), qiniuProperties.getSecretKey());
         String upToken = auth.uploadToken(qiniuProperties.getBucket());
-        KeyGenerator keyGenerator = UniKeyGenerator.getInstance();
-        key = Optional.ofNullable(key).orElseGet(() -> keyGenerator.nextId().toString());
+        key = Optional.ofNullable(key).orElseGet(() -> KeyUtils.generateId().toString());
         try {
             Response response = uploadManager.put(fileInputStream, key, upToken, null, null);
             // 解析上传成功的结果

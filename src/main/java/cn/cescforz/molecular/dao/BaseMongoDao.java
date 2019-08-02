@@ -1,7 +1,7 @@
 package cn.cescforz.molecular.dao;
 
 import cn.cescforz.commons.lang.bean.model.Page;
-import cn.cescforz.molecular.bean.model.BaseUUIDGenModel;
+import cn.cescforz.molecular.bean.model.BaseEntity;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
@@ -16,7 +16,7 @@ import java.util.List;
  * @version v1.0
  * @date Create in 2019-01-13 22:45
  */
-public interface BaseMongoDao<T extends BaseUUIDGenModel<T>> {
+public interface BaseMongoDao<T extends BaseEntity> {
 
     /**
      * 通过指定条件查找一个

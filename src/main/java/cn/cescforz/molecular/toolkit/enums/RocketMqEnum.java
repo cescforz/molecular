@@ -15,10 +15,9 @@ import lombok.Getter;
 public enum RocketMqEnum {
 
     /** 记录日志 */
-    HANDLE_RECORD_LOG("MO_MARK_LOG","HANDLE_RECORD_LOG_TAG","molecular"),
-    HANDLE_EXCEPTIONS("MO_MARK_LOG","HANDLE_EXCEPTION_TAG","molecular");
+    HANDLE_RECORD_LOG("MO_MARK_LOG","HANDLE_RECORD_LOG_TAG"),
+    HANDLE_EXCEPTIONS("MO_MARK_LOG","HANDLE_EXCEPTION_TAG");
 
     private String topic;
     private String tag;
-    private String key;
 }

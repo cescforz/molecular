@@ -15,10 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ApiLogCommandImpl extends BaseMongoCommand<ApiLogDO> implements ApiLogCommand {
 
-    private ApiLogDao apiLogDao;
-
     public ApiLogCommandImpl(ApiLogDao apiLogDao) {
         super(apiLogDao);
-        this.apiLogDao = apiLogDao;
     }
 }

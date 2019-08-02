@@ -2,7 +2,7 @@ package cn.cescforz.molecular.dao.impl;
 
 import cn.cescforz.commons.lang.annotation.Fixed;
 import cn.cescforz.commons.lang.bean.model.Page;
-import cn.cescforz.molecular.bean.model.BaseUUIDGenModel;
+import cn.cescforz.molecular.bean.model.BaseEntity;
 import cn.cescforz.molecular.constant.MongoConstants;
 import cn.cescforz.molecular.dao.BaseMongoDao;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ import java.util.List;
  * @date Create in 2019-01-13 23:40
  */
 @Slf4j
-public class BaseMongoDaoImpl<T extends BaseUUIDGenModel<T>> implements BaseMongoDao<T> {
+public class BaseMongoDaoImpl<T extends BaseEntity> implements BaseMongoDao<T> {
 
     protected MongoTemplate mongoTemplate;
     @SuppressWarnings("unchecked")
@@ -69,7 +69,7 @@ public class BaseMongoDaoImpl<T extends BaseUUIDGenModel<T>> implements BaseMong
             query.with(pageable);
             pageList.makePageList(null, pageable.getPageSize(), totalCount, pageable.getPageNumber(), pageCount);
         }
-        pageList.setData(mongoTemplate.find(query, entityClass, collectionName));
+        pageList.setPageData(mongoTemplate.find(query, entityClass, collectionName));
         return pageList;
     }
 
@@ -120,7 +120,15 @@ public class BaseMongoDaoImpl<T extends BaseUUIDGenModel<T>> implements BaseMong
 
     @Override
     public long delete(Query query) {
-        return mongoTemplate.remove(query, entityClass, collectionName).getDeletedCount();
+        long deletedCount;
+        try {
+            deletedCount = mongoTemplate.remove(query, entityClass, collectionName).getDeletedCount();
+            log.info("删除记录条数:{}", deletedCount);
+        } catch (Exception e) {
+            log.error("删除记录出错:", e);
+            deletedCount = 0;
+        }
+        return deletedCount;
     }
 
     @Override

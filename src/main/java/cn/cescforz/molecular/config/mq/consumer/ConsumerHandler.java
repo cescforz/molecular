@@ -5,9 +5,9 @@ import cn.cescforz.molecular.bean.domain.ApiLogDO;
 import cn.cescforz.molecular.bean.domain.ErrorLogDO;
 import cn.cescforz.molecular.bean.model.ConsumerEvent;
 import cn.cescforz.molecular.biz.ApiLogCommand;
-import cn.cescforz.molecular.biz.CommandHandler;
+import cn.cescforz.molecular.biz.handler.CommandHandler;
 import cn.cescforz.molecular.biz.ErrorLogCommand;
-import cn.cescforz.molecular.biz.RedisHanlder;
+import cn.cescforz.molecular.biz.handler.RedisHandler;
 import cn.cescforz.molecular.constant.ModuleConstants;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
@@ -30,18 +30,18 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Component
+@SuppressWarnings("all")
 public class ConsumerHandler extends Consumer {
 
     private CommandHandler commandHandler;
     private ApiLogCommand apiLogCommand;
     private ErrorLogCommand errorLogCommand;
-    private RedisHanlder redisHanlder;
+    private RedisHandler redisHandler;
 
     private static final Integer RECONSUME_END_TIME = 2;
 
 
     @Override
-    @SuppressWarnings("unchecked")
     @EventListener(condition = "#event.msgs[0].topic=='MARK_LOG' && #event.msgs[0].tags=='HANDLE_EXCEPTION_TAG'")
     public void handleExceptionListener(ConsumerEvent event) {
         List<MessageExt> msgs = event.getMsgs();
@@ -49,7 +49,7 @@ public class ConsumerHandler extends Consumer {
             msgs.forEach(msg -> {
                 // 自定义的唯一key
                 String keys = msg.getKeys();
-                if (null == redisHanlder.handleStr().get(keys)) {
+                if (null == redisHandler.handleStr().get(keys)) {
                     // 消息id(不是唯一的)
                     String msgId = msg.getMsgId();
                     // 消息内容
@@ -60,12 +60,12 @@ public class ConsumerHandler extends Consumer {
                         ErrorLogDO errorLog = JSON.parseObject(body, ErrorLogDO.class);
                         Object o = commandHandler.dispatchSave(errorLogCommand, errorLog);
                         log.info("第{}次消费{}消息:{} -> 结果:{}", reconsume + 1, msgId, body, o);
-                        redisHanlder.handleStr().set(keys, body, ModuleConstants.DEFAULT_EXPIRE, TimeUnit.SECONDS);
+                        redisHandler.handleStr().set(keys, body, ModuleConstants.DEFAULT_EXPIRE, TimeUnit.SECONDS);
                     } catch (Exception e) {
                         log.error("消费消息出错:", e);
                         // 重试3次就不在重试了,直接返回消费成功状态,并触发人工补偿机制。
                         if (reconsume == RECONSUME_END_TIME) {
-                            redisHanlder.handleStr().set(keys, body, ModuleConstants.DEFAULT_EXPIRE, TimeUnit.SECONDS);
+                            redisHandler.handleStr().set(keys, body, ModuleConstants.DEFAULT_EXPIRE, TimeUnit.SECONDS);
                         }
                     }
                 }
@@ -74,7 +74,6 @@ public class ConsumerHandler extends Consumer {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     @EventListener(condition = "#event.msgs[0].topic=='MARK_LOG' && #event.msgs[0].tags=='HANDLE_RECORDLOG_TAG'")
     public void handleLogListener(ConsumerEvent event) {
         List<MessageExt> msgs = event.getMsgs();
@@ -82,7 +81,7 @@ public class ConsumerHandler extends Consumer {
             msgs.forEach(msg -> {
                 // 自定义的唯一key
                 String keys = msg.getKeys();
-                if (null == redisHanlder.handleStr().get(keys)) {
+                if (null == redisHandler.handleStr().get(keys)) {
                     // 消息id(不是唯一的)
                     String msgId = msg.getMsgId();
                     // 消息内容
@@ -93,12 +92,12 @@ public class ConsumerHandler extends Consumer {
                         ApiLogDO apiLog = JSON.parseObject(body, ApiLogDO.class);
                         Object o = commandHandler.dispatchSave(apiLogCommand, apiLog);
                         log.info("第{}次消费{}消息:{} -> 结果:{}", reconsume + 1, msgId, body, o);
-                        redisHanlder.handleStr().set(keys, body, ModuleConstants.DEFAULT_EXPIRE, TimeUnit.SECONDS);
+                        redisHandler.handleStr().set(keys, body, ModuleConstants.DEFAULT_EXPIRE, TimeUnit.SECONDS);
                     } catch (Exception e) {
                         log.error("消费消息出错:", e);
                         // 重试3次就不在重试了,直接返回消费成功状态,并触发人工补偿机制。
                         if (reconsume == RECONSUME_END_TIME) {
-                            redisHanlder.handleStr().set(keys, body, ModuleConstants.DEFAULT_EXPIRE, TimeUnit.SECONDS);
+                            redisHandler.handleStr().set(keys, body, ModuleConstants.DEFAULT_EXPIRE, TimeUnit.SECONDS);
                         }
                     }
                 }
@@ -120,7 +119,7 @@ public class ConsumerHandler extends Consumer {
         this.errorLogCommand = errorLogCommand;
     }
     @Autowired
-    public void setRedisHanlder(RedisHanlder redisHanlder) {
-        this.redisHanlder = redisHanlder;
+    public void setRedisHandler(RedisHandler redisHandler) {
+        this.redisHandler = redisHandler;
     }
 }

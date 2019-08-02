@@ -1,7 +1,6 @@
 package cn.cescforz.molecular.toolkit.util;
 
 import cn.cescforz.commons.lang.toolkit.util.StringTools;
-import cn.cescforz.molecular.toolkit.tool.UniKeyGenerator;
 
 import java.util.UUID;
 
@@ -48,7 +47,7 @@ public final class RedisUtils {
      *
      * @return java.lang.String
      */
-    public static String getRedisRequestId() {
+    public static String getRedisReqId() {
         return UUID.randomUUID().toString().replaceAll("-", "").toLowerCase();
     }
 
@@ -57,7 +56,7 @@ public final class RedisUtils {
      *
      * @return java.lang.String
      */
-    public static String getRedisRequestNumId() {
-        return UniKeyGenerator.getInstance().nextId().toString();
+    public static String getRedisReqNumId() {
+        return KeyUtils.generateId().toString();
     }
 }

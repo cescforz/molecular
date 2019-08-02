@@ -1,7 +1,10 @@
-package cn.cescforz.molecular.biz;
+package cn.cescforz.molecular.biz.handler;
 
+import cn.cescforz.molecular.biz.Command;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.io.Serializable;
 
 /**
  * <p>Description: CQRS 读写分离思想的架构</p>
@@ -19,8 +22,8 @@ public class CommandHandler {
         return cmd.executeSave(t);
     }
 
-    public <T> Object dispatchDelete(Command<T> cmd, T t) {
-        return cmd.executeDelete(t);
+    public <T> Object dispatchDelete(Command<T> cmd, Serializable id) {
+        return cmd.executeDelete(id);
     }
 
     public <T> Object dispatchUpdate(Command<T> cmd, T t) {

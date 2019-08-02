@@ -1,23 +1,13 @@
 package cn.cescforz.molecular.service;
 
-import cn.cescforz.commons.lang.constant.SystemConstants;
 import cn.cescforz.molecular.MolecularApplicationTests;
 import cn.cescforz.molecular.bean.domain.ApiLogDO;
-import cn.cescforz.molecular.bean.domain.ExecutorDO;
 import cn.cescforz.molecular.biz.ApiLogCommand;
-import cn.cescforz.molecular.biz.Command;
-import cn.cescforz.molecular.biz.CommandHandler;
-import cn.cescforz.molecular.factory.ExecutorFactory;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import cn.cescforz.molecular.biz.handler.CommandHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.annotation.Rollback;
-
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ExecutorService;
 
 
 /**
@@ -43,7 +33,8 @@ public class ExecutorPoolServiceTest extends MolecularApplicationTests {
 
     @Test
     public void test() throws Exception{
-
+        ApiLogDO apiLogDO = new ApiLogDO();
+        System.out.println(apiLogDO);
 
 
         //Object o = commandHandler.dispatchSave(apiLogCommand, apiLog);

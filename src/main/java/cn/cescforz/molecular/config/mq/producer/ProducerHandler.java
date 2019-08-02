@@ -1,7 +1,7 @@
 package cn.cescforz.molecular.config.mq.producer;
 
-import cn.cescforz.molecular.constant.RocketMQConstants;
-import cn.cescforz.molecular.toolkit.tool.UniKeyGenerator;
+import cn.cescforz.commons.lang.exception.CustomRtException;
+import cn.cescforz.molecular.toolkit.util.KeyUtils;
 import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -31,48 +31,51 @@ public class ProducerHandler<T> extends Producer<T> {
         this.defaultProducer = defaultProducer;
         this.transactionProducer = transactionProducer;
     }
-    
+
     /**
      * <p>Description: 发送普通消息</p>
-     * @param t obj
+     *
+     * @param t     obj
      * @param topic topic
-     * @param tag tag
-     * @param key key
+     * @param tag   tag
+     * @param key   key
      */
     @Override
-    public void sendMsg(T t,String topic, String tag, String key) {
+    public void sendMsg(T t, String topic, String tag, String key) {
         Message msg = assemble(t, topic, tag, key);
         try {
             defaultProducer.send(msg, new SendCallback() {
                 @Override
                 public void onSuccess(SendResult result) {
-                    log.info(String.format("消息id:%s,普通消息发送状态:%s",result.getMsgId(),result.getSendStatus()));
+                    log.info(String.format("消息id:%s,普通消息发送状态:%s", result.getMsgId(), result.getSendStatus()));
                 }
+
                 @Override
                 public void onException(Throwable e) {
-                    log.error("发送普通消息中出现异常:", e);
+                    throw new CustomRtException(e.getMessage());
                 }
             });
-
         } catch (Exception e) {
-            log.error("发送普通消息出现异常:",e);
+            log.error("发送普通消息出现异常:", e);
         }
     }
 
     /**
-     * <p>Description: 发送带事务的消息</p>
-     * @param t obj
-     * @param topic topic
-     * @param tag tag
-     * @param key key
+     * 发送带事务的消息
+     *
+     * @param t     : obj
+     * @param topic : topic
+     * @param tag   : tag
+     * @param key   : 唯一键
+     * @param arg   : 发送附属对象
      */
     @Override
-    public void sendTxMsg(T t,String topic, String tag, String key, Object arg) {
+    public void sendTxMsg(T t, String topic, String tag, String key, Object arg) {
         Message msg = assemble(t, topic, tag, key);
-        try{
+        try {
             TransactionSendResult result = transactionProducer.sendMessageInTransaction(msg, arg);
-            log.info(String.format("消息id:%s,事务消息发送状态:%s",result.getMsgId(),result.getLocalTransactionState()));
-        }catch (Exception e){
+            log.info(String.format("消息id:%s,事务消息发送状态:%s", result.getMsgId(), result.getLocalTransactionState()));
+        } catch (Exception e) {
             log.error("发送事务消息出现异常:", e);
         }
     }
@@ -81,7 +84,7 @@ public class ProducerHandler<T> extends Producer<T> {
     private Message assemble(T t, String topic, String tag, String key){
         String json = JSON.toJSONString(t);
         if(StringUtils.isBlank(key)){
-            key = UniKeyGenerator.getInstance().nextId().toString();
+            key = KeyUtils.generateId().toString();
         }
         return new Message(topic,tag,key,json.getBytes());
     }

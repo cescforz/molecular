@@ -3,6 +3,8 @@ package cn.cescforz.molecular.biz.impl;
 import cn.cescforz.molecular.bean.model.BaseAutoGenModel;
 import cn.cescforz.molecular.biz.Command;
 
+import java.io.Serializable;
+
 /**
  * <p>Description: </p>
  *
@@ -18,7 +20,7 @@ public class BaseCommand<T extends BaseAutoGenModel<T>> implements Command<T> {
     }
 
     @Override
-    public Object executeDelete(Object obj) {
+    public Object executeDelete(Serializable id) {
         return null;
     }
 

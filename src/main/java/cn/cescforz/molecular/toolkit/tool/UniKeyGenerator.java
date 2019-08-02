@@ -10,7 +10,11 @@ import cn.cescforz.molecular.constant.ModuleConstants;
  * @version 1.00.00
  * @date Create in 2019/8/1 16:06
  */
-public class UniKeyGenerator {
+public final class UniKeyGenerator {
+
+    private UniKeyGenerator() {
+       throw new AssertionError();
+    }
 
     private static class CreateKeyGenerator {
         private static KeyGenerator keyGenerator = new KeyGenerator(ModuleConstants.WORKER_ID, ModuleConstants.DATACENTER_ID);

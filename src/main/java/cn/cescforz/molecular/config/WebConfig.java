@@ -2,6 +2,7 @@ package cn.cescforz.molecular.config;
 
 import cn.cescforz.commons.lang.version.CustomRequestMappingHandlerMapping;
 import cn.cescforz.molecular.interceptor.ApiInterceptor;
+import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
@@ -14,6 +15,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
  * @version 1.00.00
  * @date Create in 2019/7/31 11:34
  */
+@SpringBootConfiguration
 public class WebConfig extends WebMvcConfigurationSupport {
 
 

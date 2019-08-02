@@ -1,6 +1,6 @@
 package cn.cescforz.molecular.bean.domain;
 
-import cn.cescforz.molecular.bean.model.BaseUUIDGenModel;
+import cn.cescforz.molecular.bean.model.BaseEntity;
 import cn.cescforz.molecular.constant.MongoConstants;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -18,7 +18,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @NoArgsConstructor
 @Data
 @Document(collection = MongoConstants.ERROR_LOG)
-public class ErrorLogDO extends BaseUUIDGenModel<ErrorLogDO> {
+public class ErrorLogDO extends BaseEntity {
 
     private static final long serialVersionUID = 3345680287356589611L;
 

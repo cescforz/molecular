@@ -1,6 +1,6 @@
 package cn.cescforz.molecular.bean.domain;
 
-import cn.cescforz.molecular.bean.model.BaseUUIDGenModel;
+import cn.cescforz.molecular.bean.model.BaseEntity;
 import cn.cescforz.molecular.constant.MongoConstants;
 import com.alibaba.fastjson.JSON;
 import lombok.Data;
@@ -20,7 +20,7 @@ import java.util.Map;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Document(collection = MongoConstants.API_LOG)
-public class ApiLogDO extends BaseUUIDGenModel<ApiLogDO> {
+public class ApiLogDO extends BaseEntity {
 
     private static final long serialVersionUID = 557525806742068700L;
 

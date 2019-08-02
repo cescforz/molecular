@@ -9,7 +9,7 @@ import cn.cescforz.molecular.bean.domain.ApiLogDO;
  * @version 1.00.00
  * @date Create in 2019/8/1 9:27
  */
-public interface ApiLogCommand extends Command<ApiLogDO> {
+public interface ApiLogCommand extends Command<ApiLogDO>,QueryCommand<ApiLogDO> {
 
 
 }

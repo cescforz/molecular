@@ -1,5 +1,7 @@
 package cn.cescforz.molecular.biz;
 
+import java.io.Serializable;
+
 /**
  * <p>Description: </p>
  *
@@ -12,7 +14,7 @@ public interface Command<T> {
 
     Object executeSave(T t);
 
-    Object executeDelete(Object obj);
+    Object executeDelete(Serializable id);
 
     Object executeUpdate(T t);
 }
