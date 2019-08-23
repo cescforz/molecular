@@ -5,14 +5,18 @@ import cn.cescforz.commons.lang.enums.ResponseEnum;
 import cn.cescforz.commons.lang.exception.CustomException;
 import cn.cescforz.commons.lang.exception.CustomRtException;
 import cn.cescforz.commons.lang.toolkit.util.StringTools;
+import cn.cescforz.molecular.annotation.Idempotent;
 import cn.cescforz.molecular.bean.domain.ApiLogDO;
 import cn.cescforz.molecular.bean.domain.ErrorLogDO;
+import cn.cescforz.molecular.biz.handler.RedisHandler;
 import cn.cescforz.molecular.config.mq.producer.Producer;
 import cn.cescforz.molecular.constant.ModuleConstants;
+import cn.cescforz.molecular.constant.RedisConstants;
 import cn.cescforz.molecular.constant.RocketMQConstants;
 import cn.cescforz.molecular.toolkit.util.IllegalStrFilterUtils;
+import cn.cescforz.molecular.toolkit.util.KeyUtils;
+import cn.cescforz.molecular.toolkit.util.RedisUtils;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Maps;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +26,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -29,13 +34,14 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
  * <p>©2018 Cesc. All Rights Reserved.</p>
- * <p>Description: 异常处理切面类</p>
+ * <p>Description: 网络请求切面类：幂等防重、接口调用异常处理</p>
  *
  * @author cesc
  * @version v1.0
@@ -44,7 +50,7 @@ import java.util.concurrent.TimeUnit;
 @Aspect
 @Component
 @Slf4j
-public class WebExceptionAspect {
+public class WebRequestAspect {
 
     @Value("${interface.request.timeout}")
     private int performanceBadValue;
@@ -59,6 +65,8 @@ public class WebExceptionAspect {
     private Producer<ApiLogDO> logProducer;
 
 
+    private RedisHandler redisHandler;
+
     /**
      * 切点位置
      */
@@ -66,8 +74,8 @@ public class WebExceptionAspect {
 
     @Pointcut(POINT_CUT)
     public void pointCut() {
+        // to do nothing
     }
-
 
     @Around("pointCut()")
     public ResponseDTO handleControllerMethod(ProceedingJoinPoint pjp) throws Throwable {
@@ -96,6 +104,31 @@ public class WebExceptionAspect {
         return responseDTO;
     }
 
+    @Around(value = "@annotation(cn.cescforz.molecular.annotation.Idempotent)")
+    public Object preventRepeat(ProceedingJoinPoint pjp) throws Throwable {
+        // 获取当前方法信息
+        Method method = ((MethodSignature) pjp.getSignature()).getMethod();
+        // 获取注解
+        Idempotent idempotent = method.getAnnotation(Idempotent.class);
+        // 生成Key
+        String key = RedisUtils.generateRedisKey(RedisConstants.IDEMPOTENT, "_", idempotent.key() + "_" + KeyUtils.generateApiKey(method, pjp.getArgs()));
+        String requestId = RedisUtils.getRedisReqNumId();
+        boolean flag = redisHandler.tryLock(key, requestId, idempotent.expire(), idempotent.timeUnit());
+        if (!flag) {
+            throw new CustomRtException(ResponseEnum.GATE_WAY_CHECK_SIGN_FAIL, "sorry!! Interface duplicates requests, violating idempotency.");
+        }
+        // 获取锁成功
+        try {
+            return pjp.proceed();
+        } catch (Throwable e) {
+            log.error("error:",e);
+            throw e;
+        } finally {
+            // 释放锁
+            redisHandler.releaseLock(key, requestId);
+        }
+    }
+
     /**
      * <p>Description: 处理异常并包装返回参数</p>
      * @param pjp
@@ -108,11 +141,11 @@ public class WebExceptionAspect {
         ResponseDTO<Object> responseDTO;
         if (e.getClass().isAssignableFrom(CustomException.class)) {
             CustomException ce = (CustomException) e;
-            log.error("捕获到--<CustomException>--异常:{}", JSONObject.toJSONString(ce.getResponseEnum()), ce);
+            log.error("捕获到--<CustomException>--异常:{}", JSON.toJSONString(ce.getResponseEnum()), ce);
             responseDTO = new ResponseDTO<>(false, ce.getErrorCode(), ce.getMessage());
         } else if (e.getClass().isAssignableFrom(CustomRtException.class)) {
             CustomRtException cre = (CustomRtException) e;
-            log.error("捕获到--<CustomRtException>--异常:{}", JSONObject.toJSONString(cre.getResponseEnum()), cre);
+            log.error("捕获到--<CustomRtException>--异常:{}", JSON.toJSONString(cre.getResponseEnum()), cre);
             responseDTO = new ResponseDTO<>(false, cre.getErrorCode(), cre.getMessage());
         } else if (e instanceof RuntimeException) {
             log.error(String.format("捕获到--<RuntimeException--> {方法:%s,参数:%s,异常:%s}", methodName, param, e.getMessage()), e);
@@ -222,5 +255,10 @@ public class WebExceptionAspect {
     @Autowired
     public void setLogProducer(Producer<ApiLogDO> logProducer) {
         this.logProducer = logProducer;
+    }
+
+    @Autowired
+    public void setRedisHandler(RedisHandler redisHandler) {
+        this.redisHandler = redisHandler;
     }
 }

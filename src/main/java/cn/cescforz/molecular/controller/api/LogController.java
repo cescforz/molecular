@@ -3,11 +3,13 @@ package cn.cescforz.molecular.controller.api;
 import cn.cescforz.commons.lang.enums.ResponseEnum;
 import cn.cescforz.commons.lang.exception.CustomRtException;
 import cn.cescforz.commons.lang.version.annotation.ApiVersion;
+import cn.cescforz.molecular.annotation.Idempotent;
 import cn.cescforz.molecular.bean.model.BaseEntity;
 import cn.cescforz.molecular.biz.ApiLogCommand;
 import cn.cescforz.molecular.biz.handler.CommandHandler;
 import cn.cescforz.molecular.biz.handler.QueryCommandHandler;
 import cn.cescforz.molecular.controller.BaseController;
+import cn.cescforz.molecular.toolkit.util.KeyUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -15,6 +17,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -42,11 +45,9 @@ public class LogController extends BaseController {
      * @return java.lang.Object
      * @throws
      */
-    @ApiVersion(2)
-    @GetMapping("/{version}/add/{id}")
+    @Idempotent(key = "cn.cescforz.molecular.controller.api.LogController", expire = 60*5,timeUnit = TimeUnit.SECONDS)
+    @GetMapping("/add/{id}")
     public Object add(@PathVariable String id){
-
-
         return queryCommandHandler.dispatchGetById(apiLogCommand,id);
     }
 
@@ -65,6 +66,7 @@ public class LogController extends BaseController {
     public Object test2() {
         throw new CustomRtException(ResponseEnum.SYSTEM_ERROR);
     }
+
 
 
     @Autowired

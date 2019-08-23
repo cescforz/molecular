@@ -2,6 +2,7 @@ package cn.cescforz.molecular.toolkit.util;
 
 import cn.cescforz.commons.lang.toolkit.util.StringTools;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 /**
@@ -42,6 +43,14 @@ public final class RedisUtils {
         return StringTools.assembleStr(moduleName, ":", tableName, ":", variable);
     }
 
+    public static String generateRedisKey(String... args) {
+        final String[] result = {""};
+        if (ArrayUtils.isNotEmpty(args)) {
+            Arrays.stream(args).forEach(s -> result[0] = String.format("%s%s", result[0], s));
+        }
+        return result[0];
+    }
+
     /**
      * uuid生成redis requestId（非纯数字）
      *
@@ -59,4 +68,5 @@ public final class RedisUtils {
     public static String getRedisReqNumId() {
         return KeyUtils.generateId().toString();
     }
+
 }

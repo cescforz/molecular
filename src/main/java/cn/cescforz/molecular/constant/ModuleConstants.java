@@ -12,7 +12,7 @@ import com.mchange.util.AssertException;
 public final class ModuleConstants {
 
     public ModuleConstants() {
-        throw new AssertException();
+        throw new AssertionError();
     }
 
     /**系统模块类型*/
@@ -25,6 +25,6 @@ public final class ModuleConstants {
      */
     public static final Long DEFAULT_EXPIRE = 60L * 60L;
 
-    /**接口调用切点表达式*/
+    /** 接口调用切点表达式 */
     public static final String API_POINT_CUT = "execution(* cn.cescforz.molecular.controller.api.*.*(..))";
 }
